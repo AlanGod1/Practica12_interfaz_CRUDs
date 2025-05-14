@@ -1,16 +1,59 @@
+from conexion import obtener_conexion
 import sys
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout,
     QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox
 )
 
+def crear_unidad(id, nombre):
+    conexion = obtener_conexion()
+    if conexion:
+        cursor = conexion.cursor()
+        query = "INSERT INTO unidad VALUES (%s, %s)"
+        values = id, nombre
+        cursor.execute(query, values)
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
+def leer_unidad():
+    conexion = obtener_conexion()
+    if conexion:
+        cursor = conexion.cursor()
+        cursor.execute("SELECT * FROM unidad")
+        datos = cursor.fetchall()
+        cursor.close()
+        conexion.close()
+        return datos
+    return []
+
+def actualizar_unidad(id_unidad, nombre):
+    conexion = obtener_conexion()
+    if conexion:
+        cursor = conexion.cursor()
+        query = "UPDATE unidad SET nombre=%s WHERE id_unidad=%s"
+        values = nombre, id_unidad
+        cursor.execute(query, values)
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
+def eliminar_unidad(id_unidad):
+    conexion = obtener_conexion()
+    if conexion:
+        cursor = conexion.cursor()
+        query = "DELETE FROM unidad WHERE id_unidad=%s"
+        values = id_unidad,
+        cursor.execute(query, values)
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
 class VentanaCRUD(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Catálogo de Unidades")
         self.setGeometry(100, 100, 600, 400)
-
-        self.unidades = []  # Lista para simular la base de datos
 
         self.id_input = QLineEdit()
         self.id_input.setPlaceholderText("ID")
@@ -46,7 +89,8 @@ class VentanaCRUD(QWidget):
 
     def cargar_datos(self):
         self.tabla.setRowCount(0)
-        for fila_idx, (id_unidad, nombre) in enumerate(self.unidades):
+        datos = leer_unidad()
+        for fila_idx, (id_unidad, nombre) in enumerate(datos):
             self.tabla.insertRow(fila_idx)
             self.tabla.setItem(fila_idx, 0, QTableWidgetItem(str(id_unidad)))
             self.tabla.setItem(fila_idx, 1, QTableWidgetItem(nombre))
@@ -55,12 +99,13 @@ class VentanaCRUD(QWidget):
         idunidad = self.id_input.text()
         nombre = self.nombre_input.text()
         if idunidad and nombre:
-            if any(u[0] == idunidad for u in self.unidades):
-                QMessageBox.warning(self, "Duplicado", "Ya existe una unidad con ese ID.")
-                return
-            self.unidades.append((idunidad, nombre))
-            self.cargar_datos()
-            self.limpiar()
+            try:
+                crear_unidad(idunidad, nombre)
+                self.cargar_datos()
+                self.id_input.clear()
+                self.nombre_input.clear()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"No se pudo agregar:\n{e}")
         else:
             QMessageBox.warning(self, "Campos vacíos", "Por favor completa todos los campos.")
 
@@ -68,32 +113,29 @@ class VentanaCRUD(QWidget):
         idunidad = self.id_input.text()
         nombre = self.nombre_input.text()
         if idunidad and nombre:
-            for i, (id_actual, _) in enumerate(self.unidades):
-                if id_actual == idunidad:
-                    self.unidades[i] = (idunidad, nombre)
-                    self.cargar_datos()
-                    self.limpiar()
-                    return
-            QMessageBox.warning(self, "No encontrado", "No se encontró una unidad con ese ID.")
+            try:
+                actualizar_unidad(int(idunidad), nombre)
+                self.cargar_datos()
+                self.id_input.clear()
+                self.nombre_input.clear()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"No se pudo actualizar:\n{e}")
         else:
             QMessageBox.warning(self, "Campos vacíos", "Por favor completa todos los campos.")
+
 
     def eliminar(self):
         idunidad = self.id_input.text()
         if idunidad:
-            for i, (id_actual, _) in enumerate(self.unidades):
-                if id_actual == idunidad:
-                    del self.unidades[i]
-                    self.cargar_datos()
-                    self.limpiar()
-                    return
-            QMessageBox.warning(self, "No encontrado", "No se encontró una unidad con ese ID.")
+            try:
+                eliminar_unidad(int(idunidad))
+                self.cargar_datos()
+                self.id_input.clear()
+                self.nombre_input.clear()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"No se pudo eliminar:\n{e}")
         else:
             QMessageBox.warning(self, "ID requerido", "Por favor ingresa el ID a eliminar.")
-
-    def limpiar(self):
-        self.id_input.clear()
-        self.nombre_input.clear()
 
 
 if __name__ == "__main__":

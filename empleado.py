@@ -1,3 +1,4 @@
+from conexion import obtener_conexion
 import sys
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout,
@@ -5,13 +6,54 @@ from PyQt6.QtWidgets import (
     QMessageBox, QComboBox
 )
 
+def crear_empleado(id_emp, nombre, genero, puesto):
+    conexion = obtener_conexion()
+    if conexion:
+        cursor = conexion.cursor()
+        query = "INSERT INTO empleado VALUES (%s, %s, %s, %s)"
+        values = id_emp, nombre, genero, puesto
+        cursor.execute(query, values)
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
+def leer_empleados():
+    conexion = obtener_conexion()
+    if conexion:
+        cursor = conexion.cursor()
+        cursor.execute("SELECT * FROM empleado")
+        datos = cursor.fetchall()
+        cursor.close()
+        conexion.close()
+        return datos
+    return []
+
+def actualizar_empleado(id_emp, nombre, genero, puesto):
+    conexion = obtener_conexion()
+    if conexion:
+        cursor = conexion.cursor()
+        query = "UPDATE empleado SET nombre=%s, genero=%s, puesto=%s WHERE id_empleado=%s"
+        values = nombre, genero, puesto, id_emp
+        cursor.execute(query, values)
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
+def eliminar_empleado(id_emp):
+    conexion = obtener_conexion()
+    if conexion:
+        cursor = conexion.cursor()
+        query = "DELETE FROM empleado WHERE id_empleado=%s"
+        cursor.execute(query, (id_emp,))
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
 class VentanaEmpleados(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Catálogo de Empleados")
+        self.setWindowTitle("Catalogo de Empleados")
         self.setGeometry(100, 100, 700, 400)
-
-        self.empleados = []  # Simulación de base de datos en memoria
 
         self.id_input = QLineEdit()
         self.id_input.setPlaceholderText("ID")
@@ -55,9 +97,10 @@ class VentanaEmpleados(QWidget):
 
     def cargar_datos(self):
         self.tabla.setRowCount(0)
-        for fila_idx, (id_emp, nombre, genero, puesto) in enumerate(self.empleados):
+        datos = leer_empleados()
+        for fila_idx, (id_empleado, nombre, genero, puesto) in enumerate(datos):
             self.tabla.insertRow(fila_idx)
-            self.tabla.setItem(fila_idx, 0, QTableWidgetItem(str(id_emp)))
+            self.tabla.setItem(fila_idx, 0, QTableWidgetItem(str(id_empleado)))
             self.tabla.setItem(fila_idx, 1, QTableWidgetItem(nombre))
             self.tabla.setItem(fila_idx, 2, QTableWidgetItem(genero))
             self.tabla.setItem(fila_idx, 3, QTableWidgetItem(puesto))
@@ -67,14 +110,13 @@ class VentanaEmpleados(QWidget):
         nombre = self.nombre_input.text()
         genero = self.genero_input.currentText()
         puesto = self.puesto_input.currentText()
-
         if id_emp and nombre:
-            if any(emp[0] == id_emp for emp in self.empleados):
-                QMessageBox.warning(self, "Duplicado", "Ya existe un empleado con ese ID.")
-                return
-            self.empleados.append((id_emp, nombre, genero, puesto))
-            self.cargar_datos()
-            self.limpiar_campos()
+            try:
+                crear_empleado(id_emp, nombre, genero, puesto)
+                self.cargar_datos()
+                self.limpiar_campos()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"No se pudo agregar:\n{e}")
         else:
             QMessageBox.warning(self, "Campos vacíos", "Por favor completa todos los campos.")
 
@@ -83,28 +125,25 @@ class VentanaEmpleados(QWidget):
         nombre = self.nombre_input.text()
         genero = self.genero_input.currentText()
         puesto = self.puesto_input.currentText()
-
         if id_emp and nombre:
-            for i, (id_existente, _, _, _) in enumerate(self.empleados):
-                if id_existente == id_emp:
-                    self.empleados[i] = (id_emp, nombre, genero, puesto)
-                    self.cargar_datos()
-                    self.limpiar_campos()
-                    return
-            QMessageBox.warning(self, "No encontrado", "No se encontró un empleado con ese ID.")
+            try:
+                actualizar_empleado(id_emp, nombre, genero, puesto)
+                self.cargar_datos()
+                self.limpiar_campos()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"No se pudo actualizar:\n{e}")
         else:
             QMessageBox.warning(self, "Campos vacíos", "Por favor completa todos los campos.")
 
     def eliminar(self):
         id_emp = self.id_input.text()
         if id_emp:
-            for i, (id_existente, _, _, _) in enumerate(self.empleados):
-                if id_existente == id_emp:
-                    del self.empleados[i]
-                    self.cargar_datos()
-                    self.limpiar_campos()
-                    return
-            QMessageBox.warning(self, "No encontrado", "No se encontró un empleado con ese ID.")
+            try:
+                eliminar_empleado(id_emp)
+                self.cargar_datos()
+                self.limpiar_campos()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"No se pudo eliminar:\n{e}")
         else:
             QMessageBox.warning(self, "ID requerido", "Por favor ingresa el ID del empleado.")
 

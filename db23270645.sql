@@ -30,7 +30,6 @@ CREATE TABLE IF NOT EXISTS `dunodb`.`proveedores` (
   `id_proveedor` INT NOT NULL,
   `nombre` VARCHAR(50) NOT NULL,
   `telefono` VARCHAR(20) NOT NULL,
-  `contacto` VARCHAR(30) NOT NULL,
   PRIMARY KEY (`id_proveedor`))
 ENGINE = InnoDB;
 

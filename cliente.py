@@ -1,16 +1,59 @@
+from conexion import obtener_conexion
 import sys
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout,
     QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox
 )
 
+def crear_cliente(telefono, nombre, direccion, rfc):
+    conexion = obtener_conexion()
+    if conexion:
+        cursor = conexion.cursor()
+        query = "INSERT INTO clientes VALUES (%s, %s, %s, %s)"
+        values = telefono, nombre, direccion, rfc
+        cursor.execute(query, values)
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
+def leer_clientes():
+    conexion = obtener_conexion()
+    if conexion:
+        cursor = conexion.cursor()
+        cursor.execute("SELECT * FROM clientes")
+        datos = cursor.fetchall()
+        cursor.close()
+        conexion.close()
+        return datos
+    return []
+
+def actualizar_cliente(telefono, nombre, direccion, rfc):
+    conexion = obtener_conexion()
+    if conexion:
+        cursor = conexion.cursor()
+        query = "UPDATE clientes SET nombre=%s, direccion=%s, rfc=%s WHERE telefono=%s"
+        values = nombre, direccion, rfc, telefono
+        cursor.execute(query, values)
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
+def eliminar_cliente(telefono):
+    conexion = obtener_conexion()
+    if conexion:
+        cursor = conexion.cursor()
+        query = "DELETE FROM clientes WHERE telefono=%s"
+        values = (telefono,)
+        cursor.execute(query, values)
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
 class VentanaClientes(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Catálogo de Clientes")
         self.setGeometry(100, 100, 800, 400)
-
-        self.clientes = []  # Lista para simular base de datos
 
         self.telefono_input = QLineEdit()
         self.telefono_input.setPlaceholderText("Teléfono")
@@ -54,7 +97,8 @@ class VentanaClientes(QWidget):
 
     def cargar_datos(self):
         self.tabla.setRowCount(0)
-        for fila_idx, (telefono, nombre, direccion, rfc) in enumerate(self.clientes):
+        datos = leer_clientes()
+        for fila_idx, (telefono, nombre, direccion, rfc) in enumerate(datos):
             self.tabla.insertRow(fila_idx)
             self.tabla.setItem(fila_idx, 0, QTableWidgetItem(telefono))
             self.tabla.setItem(fila_idx, 1, QTableWidgetItem(nombre))
@@ -65,15 +109,14 @@ class VentanaClientes(QWidget):
         telefono = self.telefono_input.text()
         nombre = self.nombre_input.text()
         direccion = self.direccion_input.text()
-        rfc = self.rfc_input.text()
-
+        rfc = self.rfc_input.text() or None
         if telefono and nombre and direccion:
-            if any(cliente[0] == telefono for cliente in self.clientes):
-                QMessageBox.warning(self, "Duplicado", "Ya existe un cliente con ese teléfono.")
-                return
-            self.clientes.append((telefono, nombre, direccion, rfc))
-            self.cargar_datos()
-            self.limpiar_campos()
+            try:
+                crear_cliente(telefono, nombre, direccion, rfc)
+                self.cargar_datos()
+                self.limpiar_campos()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"No se pudo agregar:\n{e}")
         else:
             QMessageBox.warning(self, "Campos vacíos", "Por favor completa todos los campos obligatorios.")
 
@@ -81,29 +124,26 @@ class VentanaClientes(QWidget):
         telefono = self.telefono_input.text()
         nombre = self.nombre_input.text()
         direccion = self.direccion_input.text()
-        rfc = self.rfc_input.text()
-
+        rfc = self.rfc_input.text() or None
         if telefono and nombre and direccion:
-            for i, (tel, _, _, _) in enumerate(self.clientes):
-                if tel == telefono:
-                    self.clientes[i] = (telefono, nombre, direccion, rfc)
-                    self.cargar_datos()
-                    self.limpiar_campos()
-                    return
-            QMessageBox.warning(self, "No encontrado", "No se encontró un cliente con ese teléfono.")
+            try:
+                actualizar_cliente(telefono, nombre, direccion, rfc)
+                self.cargar_datos()
+                self.limpiar_campos()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"No se pudo actualizar:\n{e}")
         else:
             QMessageBox.warning(self, "Campos vacíos", "Por favor completa todos los campos obligatorios.")
 
     def eliminar(self):
         telefono = self.telefono_input.text()
         if telefono:
-            for i, (tel, _, _, _) in enumerate(self.clientes):
-                if tel == telefono:
-                    del self.clientes[i]
-                    self.cargar_datos()
-                    self.limpiar_campos()
-                    return
-            QMessageBox.warning(self, "No encontrado", "No se encontró un cliente con ese teléfono.")
+            try:
+                eliminar_cliente(telefono)
+                self.cargar_datos()
+                self.limpiar_campos()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"No se pudo eliminar:\n{e}")
         else:
             QMessageBox.warning(self, "Teléfono requerido", "Por favor ingresa el teléfono del cliente a eliminar.")
 
