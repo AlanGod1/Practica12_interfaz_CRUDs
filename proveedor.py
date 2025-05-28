@@ -1,57 +1,15 @@
 from conexion import obtener_conexion
 import sys
 from PyQt6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QHBoxLayout,
+    QWidget, QVBoxLayout, QHBoxLayout,
     QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox
 )
 
-def crear_proveedor(id_proveedor, nombre, telefono):
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        query = "INSERT INTO proveedores (id_proveedor, nombre, telefono) VALUES (%s, %s, %s)"
-        values = id_proveedor, nombre, telefono
-        cursor.execute(query, values)
-        conexion.commit()
-        cursor.close()
-        conexion.close()
-
-def leer_proveedores():
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        cursor.execute("SELECT id_proveedor, nombre, telefono FROM proveedores")
-        datos = cursor.fetchall()
-        cursor.close()
-        conexion.close()
-        return datos
-    return []
-
-def actualizar_proveedor(id_proveedor, nombre, telefono):
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        query = "UPDATE proveedores SET nombre=%s, telefono=%s WHERE id_proveedor=%s"
-        values = nombre, telefono, id_proveedor
-        cursor.execute(query, values)
-        conexion.commit()
-        cursor.close()
-        conexion.close()
-
-def eliminar_proveedor(id_proveedor):
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        query = "DELETE FROM proveedores WHERE id_proveedor=%s"
-        values = (id_proveedor,)
-        cursor.execute(query, values)
-        conexion.commit()
-        cursor.close()
-        conexion.close()
 
 class VentanaProveedores(QWidget):
-    def __init__(self):
+    def __init__(self, conexion):
         super().__init__()
+        self.conexion = conexion
         self.setWindowTitle("Catálogo de Proveedores")
         self.setGeometry(100, 100, 700, 400)
 
@@ -91,9 +49,53 @@ class VentanaProveedores(QWidget):
 
         self.cargar_datos()
 
+    def crear_proveedor(self, id_proveedor, nombre, telefono):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            query = "INSERT INTO proveedores (id_proveedor, nombre, telefono) VALUES (%s, %s, %s)"
+            values = id_proveedor, nombre, telefono
+            cursor.execute(query, values)
+            conexion.commit()
+            cursor.close()
+            conexion.close()
+
+    def leer_proveedores(self):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            cursor.execute("SELECT id_proveedor, nombre, telefono FROM proveedores")
+            datos = cursor.fetchall()
+            cursor.close()
+            conexion.close()
+            return datos
+        return []
+
+    def actualizar_proveedor(self, id_proveedor, nombre, telefono):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            query = "UPDATE proveedores SET nombre=%s, telefono=%s WHERE id_proveedor=%s"
+            values = nombre, telefono, id_proveedor
+            cursor.execute(query, values)
+            conexion.commit()
+            cursor.close()
+            conexion.close()
+
+    def eliminar_proveedor(self, id_proveedor):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            query = "DELETE FROM proveedores WHERE id_proveedor=%s"
+            values = (id_proveedor,)
+            cursor.execute(query, values)
+            conexion.commit()
+            cursor.close()
+            conexion.close()
+
     def cargar_datos(self):
         self.tabla.setRowCount(0)
-        datos = leer_proveedores()
+        datos = self.leer_proveedores()
         for fila_idx, (id_proveedor, nombre, telefono) in enumerate(datos):
             self.tabla.insertRow(fila_idx)
             self.tabla.setItem(fila_idx, 0, QTableWidgetItem(str(id_proveedor)))
@@ -106,7 +108,7 @@ class VentanaProveedores(QWidget):
             nombre = self.nombre_input.text()
             telefono = self.telefono_input.text()
             if nombre and telefono:
-                crear_proveedor(id_proveedor, nombre, telefono)
+                self.crear_proveedor(id_proveedor, nombre, telefono)
                 self.cargar_datos()
                 self.limpiar_campos()
             else:
@@ -122,7 +124,7 @@ class VentanaProveedores(QWidget):
             nombre = self.nombre_input.text()
             telefono = self.telefono_input.text()
             if nombre and telefono:
-                actualizar_proveedor(id_proveedor, nombre, telefono)
+                self.actualizar_proveedor(id_proveedor, nombre, telefono)
                 self.cargar_datos()
                 self.limpiar_campos()
             else:
@@ -135,7 +137,7 @@ class VentanaProveedores(QWidget):
     def eliminar(self):
         try:
             id_proveedor = int(self.id_input.text())
-            eliminar_proveedor(id_proveedor)
+            self.eliminar_proveedor(id_proveedor)
             self.cargar_datos()
             self.limpiar_campos()
         except ValueError:
@@ -148,8 +150,3 @@ class VentanaProveedores(QWidget):
         self.nombre_input.clear()
         self.telefono_input.clear()
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    ventana = VentanaProveedores()
-    ventana.show()
-    sys.exit(app.exec())

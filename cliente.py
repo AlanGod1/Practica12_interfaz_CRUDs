@@ -1,57 +1,16 @@
 from conexion import obtener_conexion
 import sys
 from PyQt6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QHBoxLayout,
+    QWidget, QVBoxLayout, QHBoxLayout,
     QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox
 )
 
-def crear_cliente(telefono, nombre, direccion, rfc):
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        query = "INSERT INTO clientes VALUES (%s, %s, %s, %s)"
-        values = telefono, nombre, direccion, rfc
-        cursor.execute(query, values)
-        conexion.commit()
-        cursor.close()
-        conexion.close()
 
-def leer_clientes():
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        cursor.execute("SELECT * FROM clientes")
-        datos = cursor.fetchall()
-        cursor.close()
-        conexion.close()
-        return datos
-    return []
-
-def actualizar_cliente(telefono, nombre, direccion, rfc):
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        query = "UPDATE clientes SET nombre=%s, direccion=%s, rfc=%s WHERE telefono=%s"
-        values = nombre, direccion, rfc, telefono
-        cursor.execute(query, values)
-        conexion.commit()
-        cursor.close()
-        conexion.close()
-
-def eliminar_cliente(telefono):
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        query = "DELETE FROM clientes WHERE telefono=%s"
-        values = (telefono,)
-        cursor.execute(query, values)
-        conexion.commit()
-        cursor.close()
-        conexion.close()
 
 class VentanaClientes(QWidget):
-    def __init__(self):
+    def __init__(self, conexion):
         super().__init__()
+        self.conexion = conexion
         self.setWindowTitle("Catálogo de Clientes")
         self.setGeometry(100, 100, 800, 400)
 
@@ -95,9 +54,53 @@ class VentanaClientes(QWidget):
 
         self.cargar_datos()
 
+    def crear_cliente(self, telefono, nombre, direccion, rfc):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            query = "INSERT INTO clientes VALUES (%s, %s, %s, %s)"
+            values = telefono, nombre, direccion, rfc
+            cursor.execute(query, values)
+            conexion.commit()
+            cursor.close()
+            conexion.close()
+
+    def leer_clientes(self):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            cursor.execute("SELECT * FROM clientes")
+            datos = cursor.fetchall()
+            cursor.close()
+            conexion.close()
+            return datos
+        return []
+
+    def actualizar_cliente(self, telefono, nombre, direccion, rfc):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            query = "UPDATE clientes SET nombre=%s, direccion=%s, rfc=%s WHERE telefono=%s"
+            values = nombre, direccion, rfc, telefono
+            cursor.execute(query, values)
+            conexion.commit()
+            cursor.close()
+            conexion.close()
+
+    def eliminar_cliente(self, telefono):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            query = "DELETE FROM clientes WHERE telefono=%s"
+            values = (telefono,)
+            cursor.execute(query, values)
+            conexion.commit()
+            cursor.close()
+            conexion.close()
+
     def cargar_datos(self):
         self.tabla.setRowCount(0)
-        datos = leer_clientes()
+        datos = self.leer_clientes()
         for fila_idx, (telefono, nombre, direccion, rfc) in enumerate(datos):
             self.tabla.insertRow(fila_idx)
             self.tabla.setItem(fila_idx, 0, QTableWidgetItem(telefono))
@@ -112,7 +115,7 @@ class VentanaClientes(QWidget):
         rfc = self.rfc_input.text() or None
         if telefono and nombre and direccion:
             try:
-                crear_cliente(telefono, nombre, direccion, rfc)
+                self.crear_cliente(telefono, nombre, direccion, rfc)
                 self.cargar_datos()
                 self.limpiar_campos()
             except Exception as e:
@@ -127,7 +130,7 @@ class VentanaClientes(QWidget):
         rfc = self.rfc_input.text() or None
         if telefono and nombre and direccion:
             try:
-                actualizar_cliente(telefono, nombre, direccion, rfc)
+                self.actualizar_cliente(telefono, nombre, direccion, rfc)
                 self.cargar_datos()
                 self.limpiar_campos()
             except Exception as e:
@@ -139,7 +142,7 @@ class VentanaClientes(QWidget):
         telefono = self.telefono_input.text()
         if telefono:
             try:
-                eliminar_cliente(telefono)
+                self.eliminar_cliente(telefono)
                 self.cargar_datos()
                 self.limpiar_campos()
             except Exception as e:
@@ -153,8 +156,3 @@ class VentanaClientes(QWidget):
         self.direccion_input.clear()
         self.rfc_input.clear()
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    ventana = VentanaClientes()
-    ventana.show()
-    sys.exit(app.exec())

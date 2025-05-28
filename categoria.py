@@ -1,57 +1,15 @@
 from conexion import obtener_conexion
 import sys
 from PyQt6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QHBoxLayout,
+    QWidget, QVBoxLayout, QHBoxLayout,
     QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox
 )
 
-def crear_catego(id, nombre):
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        query = "INSERT INTO categorias VALUES (%s, %s)"
-        values = id, nombre
-        cursor.execute(query, values)
-        conexion.commit()
-        cursor.close()
-        conexion.close()
 
-def leer_catego():
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        cursor.execute("SELECT * FROM categorias")
-        datos = cursor.fetchall()
-        cursor.close()
-        conexion.close()
-        return datos
-    return []
-
-def actualizar_catego(id_categorias, nombre):
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        query = "UPDATE categorias SET nombre=%s WHERE id_categorias=%s"
-        values = nombre, id_categorias
-        cursor.execute(query, values)
-        conexion.commit()
-        cursor.close()
-        conexion.close()
-
-def eliminar_catego(id_categorias):
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        query = "DELETE FROM categorias WHERE id_categorias=%s"
-        values = id_categorias,
-        cursor.execute(query, values)
-        conexion.commit()
-        cursor.close()
-        conexion.close()
-
-class VentanaCRUD(QWidget):
-    def __init__(self):
+class Ventanacatego(QWidget):
+    def __init__(self, conexion):
         super().__init__()
+        self.conexion = conexion
         self.setWindowTitle("Catálogo de Categorías")
         self.setGeometry(100, 100, 600, 400)
 
@@ -87,9 +45,54 @@ class VentanaCRUD(QWidget):
 
         self.cargar_datos()
 
+    def crear_catego(self, id, nombre):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            query = "INSERT INTO categorias VALUES (%s, %s)"
+            values = id, nombre
+            cursor.execute(query, values)
+            conexion.commit()
+            cursor.close()
+            conexion.close()
+
+    def leer_catego(self):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            cursor.execute("SELECT * FROM categorias")
+            datos = cursor.fetchall()
+            cursor.close()
+            conexion.close()
+            return datos
+        return []
+
+    def actualizar_catego(self,id_categorias, nombre):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            query = "UPDATE categorias SET nombre=%s WHERE id_categorias=%s"
+            values = nombre, id_categorias
+            cursor.execute(query, values)
+            conexion.commit()
+            cursor.close()
+            conexion.close()
+
+    def eliminar_catego(self, id_categorias):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            query = "DELETE FROM categorias WHERE id_categorias=%s"
+            values = id_categorias,
+            cursor.execute(query, values)
+            conexion.commit()
+            cursor.close()
+            conexion.close()
+
+
     def cargar_datos(self):
         self.tabla.setRowCount(0)
-        datos = leer_catego()
+        datos = self.leer_catego()
         for fila_idx, (id_categoria, nombre) in enumerate(datos):
             self.tabla.insertRow(fila_idx)
             self.tabla.setItem(fila_idx, 0, QTableWidgetItem(str(id_categoria)))
@@ -100,7 +103,7 @@ class VentanaCRUD(QWidget):
         nombre = self.nombre_input.text()
         if idcat and nombre:
             try:
-                crear_catego(idcat, nombre)
+                self.crear_catego(idcat, nombre)
                 self.cargar_datos()
                 self.id_input.clear()
                 self.nombre_input.clear()
@@ -114,7 +117,7 @@ class VentanaCRUD(QWidget):
         nombre = self.nombre_input.text()
         if idcat and nombre:
             try:
-                actualizar_catego(int(idcat), nombre)
+                self.actualizar_catego(int(idcat), nombre)
                 self.cargar_datos()
                 self.id_input.clear()
                 self.nombre_input.clear()
@@ -128,7 +131,7 @@ class VentanaCRUD(QWidget):
         idcat = self.id_input.text()
         if idcat:
             try:
-                eliminar_catego(int(idcat))
+                self.eliminar_catego(int(idcat))
                 self.cargar_datos()
                 self.id_input.clear()
                 self.nombre_input.clear()
@@ -138,8 +141,4 @@ class VentanaCRUD(QWidget):
             QMessageBox.warning(self, "ID requerido", "Por favor ingresa el ID a eliminar.")
 
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    ventana = VentanaCRUD()
-    ventana.show()
-    sys.exit(app.exec())
+

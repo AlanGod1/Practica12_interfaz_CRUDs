@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS `dunodb`.`articulos` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-
+INSERT INTO articulos (codigo, nombre, precio, costo, existencias, reorden, id_categorias, id_proveedor, id_unidad) VALUES (7501000140855, 'Galletas TRiki-Trakets 85gr', 18.00, 12.00, 50, 20, 6, 6, 3);
 -- -----------------------------------------------------
 -- Table `dunodb`.`clientes`
 -- -----------------------------------------------------
@@ -194,6 +194,7 @@ CREATE TABLE IF NOT EXISTS `dunodb`.`detalles_venta` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
+
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

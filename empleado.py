@@ -1,58 +1,15 @@
 from conexion import obtener_conexion
-import sys
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout,
     QLineEdit, QPushButton, QTableWidget, QTableWidgetItem,
     QMessageBox, QComboBox
 )
 
-def crear_empleado(id_emp, nombre, genero, puesto):
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        query = "INSERT INTO empleado VALUES (%s, %s, %s, %s)"
-        values = id_emp, nombre, genero, puesto
-        cursor.execute(query, values)
-        conexion.commit()
-        cursor.close()
-        conexion.close()
-
-def leer_empleados():
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        cursor.execute("SELECT * FROM empleado")
-        datos = cursor.fetchall()
-        cursor.close()
-        conexion.close()
-        return datos
-    return []
-
-def actualizar_empleado(id_emp, nombre, genero, puesto):
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        query = "UPDATE empleado SET nombre=%s, genero=%s, puesto=%s WHERE id_empleado=%s"
-        values = nombre, genero, puesto, id_emp
-        cursor.execute(query, values)
-        conexion.commit()
-        cursor.close()
-        conexion.close()
-
-def eliminar_empleado(id_emp):
-    conexion = obtener_conexion()
-    if conexion:
-        cursor = conexion.cursor()
-        query = "DELETE FROM empleado WHERE id_empleado=%s"
-        cursor.execute(query, (id_emp,))
-        conexion.commit()
-        cursor.close()
-        conexion.close()
-
 class VentanaEmpleados(QWidget):
-    def __init__(self):
+    def __init__(self, conexion):
         super().__init__()
-        self.setWindowTitle("Catalogo de Empleados")
+        self.conexion = conexion
+        self.setWindowTitle("Catálogo de Empleados")
         self.setGeometry(100, 100, 700, 400)
 
         self.id_input = QLineEdit()
@@ -95,9 +52,52 @@ class VentanaEmpleados(QWidget):
 
         self.cargar_datos()
 
+    def crear_empleado(self, id_emp, nombre, genero, puesto):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            query = "INSERT INTO empleado VALUES (%s, %s, %s, %s)"
+            values = id_emp, nombre, genero, puesto
+            cursor.execute(query, values)
+            conexion.commit()
+            cursor.close()
+            conexion.close()
+
+    def leer_empleados(self):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            cursor.execute("SELECT * FROM empleado")
+            datos = cursor.fetchall()
+            cursor.close()
+            conexion.close()
+            return datos
+        return []
+
+    def actualizar_empleado(self, id_emp, nombre, genero, puesto):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            query = "UPDATE empleado SET nombre=%s, genero=%s, puesto=%s WHERE id_empleado=%s"
+            values = nombre, genero, puesto, id_emp
+            cursor.execute(query, values)
+            conexion.commit()
+            cursor.close()
+            conexion.close()
+
+    def eliminar_empleado(self, id_emp):
+        conexion = obtener_conexion()
+        if conexion:
+            cursor = conexion.cursor()
+            query = "DELETE FROM empleado WHERE id_empleado=%s"
+            cursor.execute(query, (id_emp,))
+            conexion.commit()
+            cursor.close()
+            conexion.close()
+
     def cargar_datos(self):
         self.tabla.setRowCount(0)
-        datos = leer_empleados()
+        datos = self.leer_empleados()
         for fila_idx, (id_empleado, nombre, genero, puesto) in enumerate(datos):
             self.tabla.insertRow(fila_idx)
             self.tabla.setItem(fila_idx, 0, QTableWidgetItem(str(id_empleado)))
@@ -112,7 +112,7 @@ class VentanaEmpleados(QWidget):
         puesto = self.puesto_input.currentText()
         if id_emp and nombre:
             try:
-                crear_empleado(id_emp, nombre, genero, puesto)
+                self.crear_empleado(id_emp, nombre, genero, puesto)
                 self.cargar_datos()
                 self.limpiar_campos()
             except Exception as e:
@@ -127,7 +127,7 @@ class VentanaEmpleados(QWidget):
         puesto = self.puesto_input.currentText()
         if id_emp and nombre:
             try:
-                actualizar_empleado(id_emp, nombre, genero, puesto)
+                self.actualizar_empleado(id_emp, nombre, genero, puesto)
                 self.cargar_datos()
                 self.limpiar_campos()
             except Exception as e:
@@ -139,7 +139,7 @@ class VentanaEmpleados(QWidget):
         id_emp = self.id_input.text()
         if id_emp:
             try:
-                eliminar_empleado(id_emp)
+                self.eliminar_empleado(id_emp)
                 self.cargar_datos()
                 self.limpiar_campos()
             except Exception as e:
@@ -154,8 +154,3 @@ class VentanaEmpleados(QWidget):
         self.puesto_input.setCurrentIndex(0)
 
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    ventana = VentanaEmpleados()
-    ventana.show()
-    sys.exit(app.exec())
