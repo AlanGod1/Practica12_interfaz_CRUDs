@@ -53,7 +53,7 @@ class VentanaProveedores(QWidget):
         conexion = obtener_conexion()
         if conexion:
             cursor = conexion.cursor()
-            query = "INSERT INTO proveedores (id_proveedor, nombre, telefono) VALUES (%s, %s, %s)"
+            query = "INSERT INTO proveedor (id_proveedor, nombre, telefono) VALUES (%s, %s, %s)"
             values = id_proveedor, nombre, telefono
             cursor.execute(query, values)
             conexion.commit()
@@ -64,7 +64,7 @@ class VentanaProveedores(QWidget):
         conexion = obtener_conexion()
         if conexion:
             cursor = conexion.cursor()
-            cursor.execute("SELECT id_proveedor, nombre, telefono FROM proveedores")
+            cursor.execute("SELECT id_proveedor, nombre, telefono FROM proveedor")
             datos = cursor.fetchall()
             cursor.close()
             conexion.close()
@@ -75,7 +75,7 @@ class VentanaProveedores(QWidget):
         conexion = obtener_conexion()
         if conexion:
             cursor = conexion.cursor()
-            query = "UPDATE proveedores SET nombre=%s, telefono=%s WHERE id_proveedor=%s"
+            query = "UPDATE proveedor SET nombre=%s, telefono=%s WHERE id_proveedor=%s"
             values = nombre, telefono, id_proveedor
             cursor.execute(query, values)
             conexion.commit()
@@ -86,7 +86,7 @@ class VentanaProveedores(QWidget):
         conexion = obtener_conexion()
         if conexion:
             cursor = conexion.cursor()
-            query = "DELETE FROM proveedores WHERE id_proveedor=%s"
+            query = "DELETE FROM proveedor WHERE id_proveedor=%s"
             values = (id_proveedor,)
             cursor.execute(query, values)
             conexion.commit()

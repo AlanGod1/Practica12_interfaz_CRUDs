@@ -10,6 +10,7 @@ def obtener_conexion():
             user="root",
             password="@Pataloca0",  # ¡Asegúrate de que sea correcta!
             database="dunodb",
+            auth_plugin= 'mysql_native_password'
         )
         print("¡Conexión exitosa!")  # Debug
         return conexion

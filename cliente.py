@@ -58,7 +58,7 @@ class VentanaClientes(QWidget):
         conexion = obtener_conexion()
         if conexion:
             cursor = conexion.cursor()
-            query = "INSERT INTO clientes VALUES (%s, %s, %s, %s)"
+            query = "INSERT INTO cliente VALUES (%s, %s, %s, %s)"
             values = telefono, nombre, direccion, rfc
             cursor.execute(query, values)
             conexion.commit()
@@ -69,7 +69,7 @@ class VentanaClientes(QWidget):
         conexion = obtener_conexion()
         if conexion:
             cursor = conexion.cursor()
-            cursor.execute("SELECT * FROM clientes")
+            cursor.execute("SELECT * FROM cliente")
             datos = cursor.fetchall()
             cursor.close()
             conexion.close()
@@ -80,7 +80,7 @@ class VentanaClientes(QWidget):
         conexion = obtener_conexion()
         if conexion:
             cursor = conexion.cursor()
-            query = "UPDATE clientes SET nombre=%s, direccion=%s, rfc=%s WHERE telefono=%s"
+            query = "UPDATE cliente SET nombre=%s, direccion=%s, rfc=%s WHERE telefono=%s"
             values = nombre, direccion, rfc, telefono
             cursor.execute(query, values)
             conexion.commit()
@@ -91,7 +91,7 @@ class VentanaClientes(QWidget):
         conexion = obtener_conexion()
         if conexion:
             cursor = conexion.cursor()
-            query = "DELETE FROM clientes WHERE telefono=%s"
+            query = "DELETE FROM cliente WHERE telefono=%s"
             values = (telefono,)
             cursor.execute(query, values)
             conexion.commit()

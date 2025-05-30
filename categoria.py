@@ -49,7 +49,7 @@ class Ventanacatego(QWidget):
         conexion = obtener_conexion()
         if conexion:
             cursor = conexion.cursor()
-            query = "INSERT INTO categorias VALUES (%s, %s)"
+            query = "INSERT INTO categoria VALUES (%s, %s)"
             values = id, nombre
             cursor.execute(query, values)
             conexion.commit()
@@ -60,30 +60,30 @@ class Ventanacatego(QWidget):
         conexion = obtener_conexion()
         if conexion:
             cursor = conexion.cursor()
-            cursor.execute("SELECT * FROM categorias")
+            cursor.execute("SELECT * FROM categoria")
             datos = cursor.fetchall()
             cursor.close()
             conexion.close()
             return datos
         return []
 
-    def actualizar_catego(self,id_categorias, nombre):
+    def actualizar_catego(self,id_categoria, nombre):
         conexion = obtener_conexion()
         if conexion:
             cursor = conexion.cursor()
-            query = "UPDATE categorias SET nombre=%s WHERE id_categorias=%s"
-            values = nombre, id_categorias
+            query = "UPDATE categoria SET nombre=%s WHERE id_categoria=%s"
+            values = nombre, id_categoria
             cursor.execute(query, values)
             conexion.commit()
             cursor.close()
             conexion.close()
 
-    def eliminar_catego(self, id_categorias):
+    def eliminar_catego(self, id_categoria):
         conexion = obtener_conexion()
         if conexion:
             cursor = conexion.cursor()
-            query = "DELETE FROM categorias WHERE id_categorias=%s"
-            values = id_categorias,
+            query = "DELETE FROM categoria WHERE id_categoria=%s"
+            values = id_categoria,
             cursor.execute(query, values)
             conexion.commit()
             cursor.close()

@@ -72,12 +72,12 @@ class VentanaArticulos(QWidget):
         if conexion:
             cursor = conexion.cursor()
 
-            cursor.execute("SELECT id_categorias, nombre FROM categorias")
+            cursor.execute("SELECT id_categoria, nombre FROM categoria")
             for id_cat, nombre in cursor.fetchall():
                 self.categoria_combo.addItem(nombre, id_cat)
                 self.categorias[nombre] = id_cat
 
-            cursor.execute("SELECT id_proveedor, nombre FROM proveedores")
+            cursor.execute("SELECT id_proveedor, nombre FROM proveedor")
             for id_prov, nombre in cursor.fetchall():
                 self.proveedor_combo.addItem(nombre, id_prov)
                 self.proveedores[nombre] = id_prov
@@ -110,8 +110,8 @@ class VentanaArticulos(QWidget):
             conexion = obtener_conexion()
             cursor = conexion.cursor()
             query = """
-                INSERT INTO articulos 
-                (codigo, nombre, precio, costo, existencias, reorden, id_categorias, id_proveedor, id_unidad)
+                INSERT INTO articulo 
+                (codigo, nombre, precio, costo, existencias, reorden, id_categoria, id_proveedor, id_unidad)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             valores = (codigo, nombre, precio, costo, existencias, reorden, id_categoria, id_proveedor, id_unidad)
@@ -133,9 +133,9 @@ class VentanaArticulos(QWidget):
             cursor.execute("""
                 SELECT a.codigo, a.nombre, a.precio, a.costo, a.existencias, a.reorden,
                        c.nombre, p.nombre, u.nombre
-                FROM articulos a
-                JOIN categorias c ON a.id_categorias = c.id_categorias
-                JOIN proveedores p ON a.id_proveedor = p.id_proveedor
+                FROM articulo a
+                JOIN categoria c ON a.id_categoria = c.id_categoria
+                JOIN proveedor p ON a.id_proveedor = p.id_proveedor
                 JOIN unidad u ON a.id_unidad = u.id_unidad
             """)
             for row_idx, row in enumerate(cursor.fetchall()):
