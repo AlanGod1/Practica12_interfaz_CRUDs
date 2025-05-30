@@ -8,6 +8,7 @@ from proveedor import VentanaProveedores
 from unidad import VentanaUnidad
 from articulo import VentanaArticulos
 from venta import VentanaVenta
+from registro_ventas import VentanaRegistroVentas
 class VentanaPrincipal(QWidget):
     def __init__(self):
         super().__init__()
@@ -26,6 +27,7 @@ class VentanaPrincipal(QWidget):
         self.tabs.addTab(VentanaUnidad(self.conexion), "Unidad")
         self.tabs.addTab(VentanaArticulos(self.conexion), "Articulos")
         self.tabs.addTab(VentanaVenta(self.conexion), "Venta")
+        self.tabs.addTab(VentanaRegistroVentas(self.conexion), "Registro de Ventas")
         layout = QVBoxLayout()
         layout.addWidget(self.tabs)
         self.setLayout(layout)

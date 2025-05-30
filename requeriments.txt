@@ -1,0 +1,7 @@
+Instalar las siguientes librerias:
+PyQt6 6.9.0
+mysql_connector 2.2.9
+
+Con los siguientes comandos:
+pip install PyQt6
+pip install mysql_connector

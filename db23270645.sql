@@ -103,7 +103,6 @@ CREATE TABLE IF NOT EXISTS `dunodb`.`empleado` (
   PRIMARY KEY (`id_empleado`))
 ENGINE = InnoDB;
 
-
 -- -----------------------------------------------------
 -- Table `dunodb`.`venta`
 -- -----------------------------------------------------
@@ -111,7 +110,7 @@ CREATE TABLE IF NOT EXISTS `dunodb`.`venta` (
   `id_venta` INT NOT NULL,
   `fecha` DATE NOT NULL,
   `importe` FLOAT NOT NULL,
-  `forma_pago` ENUM('Efectivo', 'Targeta') NOT NULL,
+  `forma_pago` ENUM('Efectivo', 'Tarjeta') NOT NULL,
   `telefono` VARCHAR(20) NOT NULL,
   `id_empleado` INT NOT NULL,
   PRIMARY KEY (`id_venta`),
